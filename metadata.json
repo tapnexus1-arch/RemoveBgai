@@ -1,0 +1,6 @@
+{
+  "name": "RemoveBG AI",
+  "description": "Free open-source AI background remover. Create transparent PNG images instantly with local self-hosted AI processing and high-precision cutout editor.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: removebg_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - HOST=0.0.0.0
+      - PORT=8000
+      - MODEL_NAME=briaai/RMBG-1.4
+      - DEVICE=cpu  # Set to "cuda" if using NVIDIA GPU
+      - MAX_FILE_SIZE=26214400  # 25 MB
+      - MAX_IMAGE_PIXELS=16000000
+      - MAX_CONCURRENT_JOBS=4
+      - IMAGE_RETENTION_SECONDS=300
+      - TEMP_DIR=/tmp/removebg_ai
+    volumes:
+      - temp_storage:/tmp/removebg_ai
+      - model_cache:/root/.u2net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Optional NVIDIA GPU configuration (uncomment for CUDA deployment):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: removebg_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - VITE_BACKEND_URL=http://localhost:8000
+      - VITE_ADSENSE_CLIENT_ID=${NEXT_PUBLIC_ADSENSE_CLIENT_ID}
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  temp_storage:
+  model_cache:
